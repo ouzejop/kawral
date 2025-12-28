@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawral AI - Données & Rapports</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #f0f9f4 0%, #ffffff 100%);
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 3rem;
+        }
+
+        .page-header-text h1 {
+            font-size: 2.3rem;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header-text p {
+            font-size: 1.05rem;
+            color: #64748b;
+        }
+
+        .download-all-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: #16a34a;
+            color: white;
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .download-all-btn:hover {
+            background: #15803d;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stat-content h3 {
+            font-size: 0.95rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+        }
+
+        .stat-content .value {
+            font-size: 2.5rem;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-content .change {
+            font-size: 0.9rem;
+        }
+
+        .stat-content .change.negative {
+            color: #dc2626;
+        }
+
+        .stat-content .change.positive {
+            color: #f59e0b;
+        }
+
+        .stat-content .change.neutral {
+            color: #16a34a;
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.green {
+            background: #16a34a;
+        }
+
+        .stat-icon.cyan {
+            background: #0891b2;
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.8rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .chart-card h3 {
+            font-size: 1.2rem;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .sources-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 2.5rem;
+        }
+
+        .sources-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .sources-header h2 {
+            font-size: 1.5rem;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .api-doc-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: white;
+            color: #4a5568;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .api-doc-btn:hover {
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+
+        .source-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .source-item:hover {
+            border-color: #16a34a;
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.1);
+        }
+
+        .source-info {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .source-icon {
+            width: 50px;
+            height: 50px;
+            background: #16a34a;
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .source-details h3 {
+            font-size: 1.1rem;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .source-details p {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .source-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .update-frequency {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .download-btn {
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            color: #4a5568;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .download-btn:hover {
+            background: #f0f9f4;
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+
+        .download-section {
+            background: linear-gradient(135deg, #f0f9f4 0%, #d1fae5 100%);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .download-icon-circle {
+            width: 80px;
+            height: 80px;
+            background: #16a34a;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .download-section h2 {
+            font-size: 1.8rem;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .download-section p {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        .download-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .format-btn {
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .format-btn.primary {
+            background: #16a34a;
+            color: white;
+        }
+
+        .format-btn.primary:hover {
+            background: #15803d;
+        }
+
+        .format-btn.secondary {
+            background: white;
+            color: #4a5568;
+            border: 1px solid #e5e7eb;
+        }
+
+        .format-btn.secondary:hover {
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+
+        .chatbot {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #16a34a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 1024px) {
+            .stats-cards,
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+        }
+
+        .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 2.5rem;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    background: #16a34a;
+    color: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 0.2rem;
+    margin-right: 0.5rem;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #4a5568;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.nav-btn i {
+    font-size: 0.85rem;
+}
+
+.nav-btn.active {
+    background: #16a34a;
+    color: white;
+}
+
+.nav-btn:hover:not(.active) {
+    background: #f0f9f4;
+}
+
+.plus-menu {
+    position: relative;
+}
+
+.plus-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #4a5568;
+    border-radius: 6px;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.3rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 180px;
+    z-index: 100;
+}
+
+.dropdown.show {
+    display: block;
+}
+
+.dropdown a {
+    display: block;
+    padding: 0.8rem 1.2rem;
+    color: #4a5568;
+    text-decoration: none;
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+.dropdown a:hover {
+    background: #f0f9f4;
+}
+
+.connexion-btn {
+    background: #16a34a;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.connexion-btn:hover {
+    background: #15803d;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <div class="logo-icon">K</div>
+                Kawral AI
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-links">
+                <button class="nav-btn">
+                    <i class="fa-solid fa-house"></i>
+                    <a href="home.html">Accueil</a>
+                </button>
+                <button class="nav-btn">
+                    <i class="fa-solid fa-map"></i>
+                    <a href="carte.html">Carte</a>
+                </button>
+                <button class="nav-btn">
+                    <i class="fa-solid fa-database"></i>
+                    <a href="donnees.html">Données</a>
+                </button>
+                <div class="plus-menu">
+                    <button class="plus-btn" onclick="toggleDropdown()">
+                        Plus
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown" id="dropdown">
+                        <a href="suivi_citoyen.html">Suivi citoyen</a>
+                        <a href="recommandation.html">Recommandations</a>
+                        <a href="#">À propos</a>
+                    </div>
+                </div>
+            </div>
+            <button class="connexion-btn">Connexion</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-header">
+            <div class="page-header-text">
+                <h1>Données & Rapports</h1>
+                <p>Accédez aux données environnementales et téléchargez les rapports</p>
+            </div>
+            <button class="download-all-btn">
+                <i class="fa-solid fa-download"></i>
+                Télécharger tout
+            </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>NDVI Moyen 2024</h3>
+                    <div class="value">0.45</div>
+                    <div class="change negative">-13% par rapport à 2023</div>
+                </div>
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>Littoral érodé</h3>
+                    <div class="value">152 km</div>
+                    <div class="change positive">+20% depuis 2020</div>
+                </div>
+                <div class="stat-icon cyan">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>Datasets disponibles</h3>
+                    <div class="value">1,247</div>
+                    <div class="change neutral">Mis à jour quotidiennement</div>
+                </div>
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3>Évolution NDVI & NDWI</h3>
+                <div class="chart-container">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>Érosion côtière (km)</h3>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sources Section -->
+        <div class="sources-section">
+            <div class="sources-header">
+                <h2>Sources de données</h2>
+                <button class="api-doc-btn">
+                    <i class="fa-solid fa-database"></i>
+                    API Documentation
+                </button>
+            </div>
+
+            <div class="source-item">
+                <div class="source-info">
+                    <div class="source-icon">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div class="source-details">
+                        <h3>NASA MODIS</h3>
+                        <p>Images satellite NDVI</p>
+                    </div>
+                </div>
+                <div class="source-actions">
+                    <span class="update-frequency">MAJ: Quotidien</span>
+                    <button class="download-btn">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="source-item">
+                <div class="source-info">
+                    <div class="source-icon">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div class="source-details">
+                        <h3>ESA Sentinel-2</h3>
+                        <p>Images haute résolution</p>
+                    </div>
+                </div>
+                <div class="source-actions">
+                    <span class="update-frequency">MAJ: 5 jours</span>
+                    <button class="download-btn">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="source-item">
+                <div class="source-info">
+                    <div class="source-icon">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div class="source-details">
+                        <h3>ANACIM</h3>
+                        <p>Données climatiques</p>
+                    </div>
+                </div>
+                <div class="source-actions">
+                    <span class="update-frequency">MAJ: Horaire</span>
+                    <button class="download-btn">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="source-item">
+                <div class="source-info">
+                    <div class="source-icon">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div class="source-details">
+                        <h3>NOAA</h3>
+                        <p>Données océaniques</p>
+                    </div>
+                </div>
+                <div class="source-actions">
+                    <span class="update-frequency">MAJ: Quotidien</span>
+                    <button class="download-btn">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="source-item">
+                <div class="source-info">
+                    <div class="source-icon">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div class="source-details">
+                        <h3>USGS</h3>
+                        <p>Topographie</p>
+                    </div>
+                </div>
+                <div class="source-actions">
+                    <span class="update-frequency">MAJ: Annuel</span>
+                    <button class="download-btn">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Section -->
+        <div class="download-section">
+            <div class="download-icon-circle">
+                <i class="fa-solid fa-download"></i>
+            </div>
+            <h2>Télécharger les datasets complets</h2>
+            <p>Accédez à l'ensemble de nos données environnementales au format CSV, GeoJSON ou NetCDF</p>
+            <div class="download-buttons">
+                <button class="format-btn primary">Télécharger CSV</button>
+                <button class="format-btn secondary">Télécharger GeoJSON</button>
+                <button class="format-btn secondary">Télécharger NetCDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot">
+        <button class="chatbot-toggle" onclick="alert('Fonctionnalité de chat à venir')">
+            <i class="fa-solid fa-comments"></i>
+        </button>
+    </div>
+
+    <script>
+        // Line Chart - NDVI & NDWI Evolution
+        const lineCtx = document.getElementById('lineChart').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                datasets: [{
+                    label: 'NDVI',
+                    data: [0.42, 0.38, 0.45, 0.52, 0.48, 0.45],
+                    borderColor: '#1a4d2e',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#1a4d2e'
+                }, {
+                    label: 'NDWI',
+                    data: [0.35, 0.32, 0.38, 0.42, 0.39, 0.37],
+                    borderColor: '#16a34a',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#16a34a'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 0.6,
+                        grid: {
+                            color: '#f0f0f0'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Bar Chart - Coastal Erosion
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['2020', '2021', '2022', '2023', '2024'],
+                datasets: [{
+                    label: 'Érosion (km)',
+                    data: [127, 135, 142, 148, 152],
+                    backgroundColor: '#16a34a',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 160,
+                        grid: {
+                            color: '#f0f0f0'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown');
+            dropdown.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

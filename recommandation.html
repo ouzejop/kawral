@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawral AI - Recommandations</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #f0f9f4 0%, #ffffff 100%);
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2.5rem;
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.3rem;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .page-header p {
+            font-size: 1.05rem;
+            color: #16a34a;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 2.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            background: #16a34a;
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .section-title h2 {
+            font-size: 1.5rem;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .section-title p {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .region-card {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-radius: 12px;
+            padding: 1.8rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .region-card.coastal {
+            background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+        }
+
+        .region-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .region-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .region-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(22, 163, 74, 0.2);
+            color: #16a34a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .region-icon.coastal {
+            background: rgba(8, 145, 178, 0.2);
+            color: #0891b2;
+        }
+
+        .region-header h3 {
+            font-size: 1.3rem;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .region-status {
+            font-size: 0.9rem;
+            color: #059669;
+            margin-bottom: 1.2rem;
+        }
+
+        .region-status.urgent {
+            color: #dc2626;
+        }
+
+        .recommendations-list {
+            list-style: none;
+        }
+
+        .recommendations-list li {
+            padding: 0.6rem 0;
+            color: #1a202c;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+
+        .recommendations-list li::before {
+            content: "•";
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab.active {
+            color: #16a34a;
+            border-bottom-color: #16a34a;
+        }
+
+        .tab:hover:not(.active) {
+            color: #4a5568;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .plants-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem;
+        }
+
+        .plant-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .plant-card:hover {
+            border-color: #16a34a;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.1);
+        }
+
+        .plant-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .plant-icon {
+            width: 50px;
+            height: 50px;
+            background: #d1fae5;
+            color: #16a34a;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .plant-info h3 {
+            font-size: 1.1rem;
+            color: #1a202c;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .plant-zone {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .plant-benefits {
+            font-size: 0.95rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .chatbot {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #16a34a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 1024px) {
+            .recommendations-grid,
+            .plants-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 2.5rem;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    background: #16a34a;
+    color: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 0.2rem;
+    margin-right: 0.5rem;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #4a5568;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.nav-btn i {
+    font-size: 0.85rem;
+}
+
+.nav-btn.active {
+    background: #16a34a;
+    color: white;
+}
+
+.nav-btn:hover:not(.active) {
+    background: #f0f9f4;
+}
+
+.plus-menu {
+    position: relative;
+}
+
+.plus-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #4a5568;
+    border-radius: 6px;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.3rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 180px;
+    z-index: 100;
+}
+
+.dropdown.show {
+    display: block;
+}
+
+.dropdown a {
+    display: block;
+    padding: 0.8rem 1.2rem;
+    color: #4a5568;
+    text-decoration: none;
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+.dropdown a:hover {
+    background: #f0f9f4;
+}
+
+.connexion-btn {
+    background: #16a34a;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.connexion-btn:hover {
+    background: #15803d;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <div class="logo-icon">K</div>
+                Kawral AI
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-links">
+                <button class="nav-btn">
+                    <i class="fa-solid fa-house"></i>
+                    <a href="home.html">Accueil</a>
+                </button>
+                <button class="nav-btn">
+                    <i class="fa-solid fa-map"></i>
+                    <a href="carte.html">Carte</a>
+                </button>
+                <button class="nav-btn">
+                    <i class="fa-solid fa-database"></i>
+                    <a href="donnees.html">Données</a>
+                </button>
+                <div class="plus-menu">
+                    <button class="plus-btn" onclick="toggleDropdown()">
+                        Plus
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown" id="dropdown">
+                        <a href="suivi_citoyen.html">Suivi citoyen</a>
+                        <a href="recommandation.html">Recommandations</a>
+                        <a href="#">À propos</a>
+                    </div>
+                </div>
+            </div>
+            <button class="connexion-btn">Connexion</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-header">
+            <h1>Recommandations</h1>
+            <p>Conseils personnalisés par l'IA pour restaurer et protéger l'environnement</p>
+        </div>
+
+        <!-- Recommendations by Region -->
+        <section class="section-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fa-solid fa-lightbulb"></i>
+                </div>
+                <div class="section-title">
+                    <h2>Recommandations par région</h2>
+                    <p>Basées sur l'analyse IA des données satellites et du terrain</p>
+                </div>
+            </div>
+
+            <div class="recommendations-grid">
+                <div class="region-card">
+                    <div class="region-header">
+                        <div class="region-icon">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <h3>Région de Louga</h3>
+                    </div>
+                    <p class="region-status">NDVI en baisse: actions de reboisement recommandées</p>
+                    <ul class="recommendations-list">
+                        <li>Planter des acacias résistants à la sécheresse</li>
+                        <li>Construire des demi-lunes pour la récupération d'eau</li>
+                        <li>Améliorer les pratiques d'élevage</li>
+                    </ul>
+                </div>
+
+                <div class="region-card coastal">
+                    <div class="region-header">
+                        <div class="region-icon coastal">
+                            <i class="fa-solid fa-water"></i>
+                        </div>
+                        <h3>Littoral de Saint-Louis</h3>
+                    </div>
+                    <p class="region-status urgent">Érosion côtière détectée: protection urgente nécessaire</p>
+                    <ul class="recommendations-list">
+                        <li>Planter des mangroves pour stabiliser les berges</li>
+                        <li>Installer des digues naturelles en pierre</li>
+                        <li>Créer des dunes artificielles</li>
+                    </ul>
+                </div>
+
+                <div class="region-card">
+                    <div class="region-header">
+                        <div class="region-icon">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <h3>Région de Matam</h3>
+                    </div>
+                    <p class="region-status">Désertification modérée: intervention recommandée</p>
+                    <ul class="recommendations-list">
+                        <li>Développer l'agroforesterie avec des espèces locales</li>
+                        <li>Construire des cordons pierreux anti-érosion</li>
+                        <li>Promouvoir la culture de jatropha</li>
+                    </ul>
+                </div>
+
+                <div class="region-card coastal">
+                    <div class="region-header">
+                        <div class="region-icon coastal">
+                            <i class="fa-solid fa-water"></i>
+                        </div>
+                        <h3>Delta du Saloum</h3>
+                    </div>
+                    <p class="region-status">Salinisation des sols: actions préventives nécessaires</p>
+                    <ul class="recommendations-list">
+                        <li>Restaurer les forêts de mangroves</li>
+                        <li>Créer des bassins de rétention d'eau douce</li>
+                        <li>Encourager la riziculture adaptée au sel</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Recommendations with Tabs -->
+        <section class="section-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <div class="section-title">
+                    <h2>Recommandations détaillées</h2>
+                    <p>Solutions concrètes pour chaque type d'intervention</p>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab(0)">
+                    <i class="fa-solid fa-seedling"></i>
+                    Plantes adaptées
+                </button>
+                <button class="tab" onclick="switchTab(1)">
+                    <i class="fa-solid fa-water"></i>
+                    Protection côtière
+                </button>
+                <button class="tab" onclick="switchTab(2)">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    Actions locales
+                </button>
+            </div>
+
+            <!-- Tab 1: Plantes adaptées -->
+            <div class="tab-content active" id="tab0">
+                <h3 style="font-size: 1.2rem; color: #1a202c; margin-bottom: 1.5rem;">Plantes recommandées pour le reboisement</h3>
+                <div class="plants-grid">
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Acacia Sénégal</h3>
+                                <span class="plant-zone">Zone: Sahel</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Fixation azote, résistance sécheresse</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Neem</h3>
+                                <span class="plant-zone">Zone: Sahel</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Fertilisant naturel, ombre</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Palétuviers</h3>
+                                <span class="plant-zone">Zone: Côtier</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Protection côtière, biodiversité</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Baobab</h3>
+                                <span class="plant-zone">Zone: Sahel</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Stockage eau, nutrition</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Jatropha</h3>
+                                <span class="plant-zone">Zone: Sahel</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Biocarburant, haies vives</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Eucalyptus</h3>
+                                <span class="plant-zone">Zone: Côtier</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Croissance rapide, bois de chauffage</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Protection côtière -->
+            <div class="tab-content" id="tab1">
+                <h3 style="font-size: 1.2rem; color: #1a202c; margin-bottom: 1.5rem;">Techniques de protection côtière</h3>
+                <div class="plants-grid">
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-water"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Digues naturelles</h3>
+                                <span class="plant-zone">Urgence: Élevée</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Construction avec matériaux locaux (pierres, sable) pour freiner l'érosion</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-water"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Rechargement des plages</h3>
+                                <span class="plant-zone">Coût: Modéré</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Apport de sable pour reconstituer les plages érodées</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-water"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Brise-lames submersibles</h3>
+                                <span class="plant-zone">Durabilité: Excellente</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Structures sous-marines pour dissiper l'énergie des vagues</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-water"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Végétalisation dunaire</h3>
+                                <span class="plant-zone">Impact: Fort</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Plantation d'espèces fixatrices pour stabiliser les dunes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Actions locales -->
+            <div class="tab-content" id="tab2">
+                <h3 style="font-size: 1.2rem; color: #1a202c; margin-bottom: 1.5rem;">Actions communautaires recommandées</h3>
+                <div class="plants-grid">
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Comités villageois</h3>
+                                <span class="plant-zone">Participation: Haute</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Création de groupes locaux pour surveiller et agir</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Formation agricole</h3>
+                                <span class="plant-zone">Impact: Durable</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Ateliers sur les techniques de conservation des sols</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Pépinières communautaires</h3>
+                                <span class="plant-zone">Coût: Faible</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Production locale de plants pour le reboisement</p>
+                    </div>
+
+                    <div class="plant-card">
+                        <div class="plant-header">
+                            <div class="plant-icon">
+                                <i class="fa-solid fa-bullhorn"></i>
+                            </div>
+                            <div class="plant-info">
+                                <h3>Sensibilisation</h3>
+                                <span class="plant-zone">Portée: Large</span>
+                            </div>
+                        </div>
+                        <p class="plant-benefits">Campagnes d'information sur les enjeux environnementaux</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot">
+        <button class="chatbot-toggle" onclick="alert('Fonctionnalité de chat à venir')">
+            <i class="fa-solid fa-comments"></i>
+        </button>
+    </div>
+
+    <script>
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach((tab, i) => {
+                if (i === index) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            contents.forEach((content, i) => {
+                if (i === index) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown');
+            dropdown.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

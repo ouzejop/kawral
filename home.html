@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawral AI - Plateforme Environnementale</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #f0f9f4 0%, #ffffff 100%);
+            color: #2d3748;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 2.5rem;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: #16a34a;
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #4a5568;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn i {
+            font-size: 0.85rem;
+        }
+
+        .nav-btn.active {
+            background: #16a34a;
+            color: white;
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: #f0f9f4;
+        }
+
+        .plus-menu {
+            position: relative;
+        }
+
+        .plus-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #4a5568;
+            border-radius: 6px;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.3rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-width: 180px;
+            z-index: 100;
+        }
+
+        .dropdown.show {
+            display: block;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: 0.8rem 1.2rem;
+            color: #4a5568;
+            text-decoration: none;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .dropdown a:hover {
+            background: #f0f9f4;
+        }
+
+        .connexion-btn {
+            background: #16a34a;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .connexion-btn:hover {
+            background: #15803d;
+        }
+
+        .hero {
+            padding: 3rem 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .hero-text h1 {
+            font-size: 2.3rem;
+            line-height: 1.3;
+            margin-bottom: 1.3rem;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .hero-text p {
+            font-size: 1rem;
+            color: #16a34a;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn-primary {
+            background: #16a34a;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #15803d;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #16a34a;
+            padding: 0.7rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: #16a34a;
+        }
+
+        .map-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .map-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .risk-badge {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-marker {
+            position: absolute;
+            bottom: 40%;
+            right: 35%;
+            width: 45px;
+            height: 45px;
+            background: #16a34a;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
+        }
+
+        .map-marker i {
+            transform: rotate(45deg);
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .features {
+            padding: 3rem 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .features-subtitle {
+            text-align: center;
+            color: #16a34a;
+            font-size: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.2rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .feature-icon.green {
+            background: #16a34a;
+        }
+
+        .feature-icon.blue {
+            background: #0891b2;
+        }
+
+        .feature-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: #64748b;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .stats {
+            padding: 3rem 2.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stats h2 {
+            font-size: 2rem;
+            margin-bottom: 2.5rem;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 3px solid #16a34a;
+        }
+
+        .stat-card.green {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        }
+
+        .stat-card.yellow {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left-color: #f59e0b;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .stat-icon.green {
+            background: #16a34a;
+        }
+
+        .stat-icon.blue {
+            background: #0891b2;
+        }
+
+        .stat-icon.yellow {
+            background: #059669;
+        }
+
+        .stat-icon.gray {
+            background: #16a34a;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.4rem;
+        }
+
+        .stat-change {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .stat-sources {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .chatbot {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #16a34a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-window {
+            display: none;
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 400px;
+            height: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chatbot-window.show {
+            display: flex;
+        }
+
+        .chatbot-header {
+            background: #16a34a;
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chatbot-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .chatbot-title h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .chatbot-title p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .close-chat {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .message {
+            background: #d1fae5;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            max-width: 85%;
+            color: #1a202c;
+        }
+
+        .chatbot-input {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .send-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-content, .features-grid, .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        a {
+    text-decoration: none;
+    color: inherit;
+}
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <div class="logo-icon">K</div>
+                Kawral AI
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-links">
+                <button class="nav-btn active">
+                    <i class="fa-solid fa-house"></i>
+                    <a href="home.html">Accueil</a>
+                </button>
+                <button class="nav-btn">
+                    <i class="fa-solid fa-map"></i>
+                    <a href="carte.html">Carte</a>
+                </button>
+                <button class="nav-btn">
+                    <i class="fa-solid fa-database"></i>
+                    <a href="donnees.html">Données</a>
+                </button>
+                <div class="plus-menu">
+                    <button class="plus-btn" onclick="toggleDropdown()">
+                        Plus
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown" id="dropdown">
+                        <a href="suivi_citoyen.html">Suivi citoyen</a>
+                        <a href="recommandation.html">Recommandations</a>
+                        <a href="#">À propos</a>
+                    </div>
+                </div>
+            </div>
+            <button class="connexion-btn">Connexion</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Combattre la désertification et l'érosion côtière avec l'IA</h1>
+                <p>Kawral AI utilise l'intelligence artificielle et les données satellites pour surveiller, analyser et prévenir la dégradation environnementale au Sénégal.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary">
+                        Explorer la carte
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                    <button class="btn-secondary">Télécharger les données</button>
+                </div>
+            </div>
+            <div class="map-card">
+                <div class="map-header">
+                    <span class="map-title">Carte du Sénégal</span>
+                    <span class="risk-badge">Zones à risque</span>
+                </div>
+                <iframe 
+                    src="C:/Users/user/Documents/Projects/kawral/map/carte_inondation_dakar_amelioree.html"
+                    width="100%" 
+                    height="400" 
+                    ></iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2>Fonctionnalites principales</h2>
+        <p class="features-subtitle">Une plateforme complète pour surveiller et agir contre la dégradation environnementale</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon green">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <h3>Analyse par satellite</h3>
+                <p>Images satellites en temps réel avec indices NDVI et NDWI pour détecter la dégradation</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon green">
+                    <i class="fa-solid fa-sparkles"></i>
+                </div>
+                <h3>Prédictions IA</h3>
+                <p>Modèles d'apprentissage automatique pour anticiper les zones à risque</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon blue">
+                    <i class="fa-solid fa-water"></i>
+                </div>
+                <h3>Suivi participatif</h3>
+                <p>Les citoyens peuvent signaler des problèmes environnementaux locaux</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <h2>Surveillance en temps réel</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Zones surveillées</span>
+                    <div class="stat-icon green">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                </div>
+                <div class="stat-value">1,247</div>
+                <div class="stat-change">+12% ce mois</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-header">
+                    <span class="stat-label">NDVI moyen</span>
+                    <div class="stat-icon green">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="stat-value">0.45</div>
+                <div class="stat-change">Stable</div>
+            </div>
+            <div class="stat-card yellow">
+                <div class="stat-header">
+                    <span class="stat-label">Littoral menacé</span>
+                    <div class="stat-icon yellow">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                </div>
+                <div class="stat-value">127 km</div>
+                <div class="stat-change">-3% depuis 2020</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Sources de données</span>
+                    <div class="stat-icon gray">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                </div>
+                <div class="stat-value">5</div>
+                <div class="stat-sources">NASA, ESA, ANACIM</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chatbot -->
+    <div class="chatbot">
+        <button class="chatbot-toggle" onclick="toggleChat()">
+            <i class="fa-solid fa-comments"></i>
+        </button>
+        <div class="chatbot-window" id="chatWindow">
+            <div class="chatbot-header">
+                <div class="chatbot-info">
+                    <div class="chatbot-avatar">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <div class="chatbot-title">
+                        <h3>KawralBot</h3>
+                        <p>Assistant IA</p>
+                    </div>
+                </div>
+                <button class="close-chat" onclick="toggleChat()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="chatbot-messages">
+                <div class="message">
+                    Bonjour! Je suis KawralBot, votre assistant environnemental. Comment puis-je vous aider aujourd'hui?
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" placeholder="Posez votre question...">
+                <button class="send-btn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const plusMenu = document.querySelector('.plus-menu');
+            const dropdown = document.getElementById('dropdown');
+            if (!plusMenu.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

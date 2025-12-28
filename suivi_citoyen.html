@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawral AI - Suivi Citoyen</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2.5rem;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.3rem;
+            margin-right: 1rem;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #4a5568;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background: #f0f9f4;
+            color: #16a34a;
+        }
+
+        .nav-btn.active {
+            background: #16a34a;
+            color: white;
+        }
+
+        .plus-menu {
+            position: relative;
+        }
+
+        .plus-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #4a5568;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .plus-btn:hover {
+            background: #f0f9f4;
+        }
+
+        .nav-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            min-width: 200px;
+            overflow: hidden;
+            animation: slideDown 0.3s ease;
+        }
+
+        .nav-dropdown.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-dropdown a {
+            display: block;
+            padding: 0.9rem 1.3rem;
+            color: #4a5568;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .nav-dropdown a:hover {
+            background: #f0f9f4;
+            color: #16a34a;
+            padding-left: 1.5rem;
+        }
+
+        .connexion-btn {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+        }
+
+        .connexion-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .header {
+            margin-bottom: 32px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1b5e20;
+        }
+
+        .header p {
+            color: #558b2f;
+            font-size: 1.1em;
+            font-weight: 400;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            animation: fadeInUp 0.6s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #1b5e20;
+        }
+
+        .map-container {
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+            border-radius: 12px;
+            height: 450px;
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .map-marker:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .marker-red {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            top: 35%;
+            left: 45%;
+        }
+
+        .marker-orange {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            top: 55%;
+            left: 48%;
+        }
+
+        .marker-green {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            top: 70%;
+            left: 58%;
+        }
+
+        .marker-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            top: 45%;
+            left: 62%;
+        }
+
+        .map-help-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            color: #1b5e20;
+            font-weight: 600;
+            text-align: center;
+            background: rgba(255,255,255,0.9);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .map-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(46, 125, 50, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #4a5568;
+            padding: 14px 28px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            border-color: #4caf50;
+            background: #f1f8e9;
+            transform: translateY(-2px);
+        }
+
+        .filter-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .filter-tab {
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.95em;
+            background: white;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-tab i {
+            font-size: 1.5em;
+            color: #4a5568;
+        }
+
+        .filter-tab:hover {
+            background: #f1f8e9;
+            border-color: #4caf50;
+            transform: translateY(-2px);
+        }
+
+        .filter-tab.active {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            color: #1b5e20;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+
+        .filter-tab.active i {
+            color: #1b5e20;
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .stat-item:hover {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            transform: translateX(5px);
+        }
+
+        .stat-label {
+            color: #4a5568;
+            font-size: 1em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.8em;
+            color: #1b5e20;
+        }
+
+        .badge-card {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .badge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .badge-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.3em;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+        }
+
+        .badge-info h3 {
+            font-size: 1.1em;
+            margin-bottom: 4px;
+            font-weight: 700;
+            color: #1b5e20;
+        }
+
+        .badge-info p {
+            font-size: 0.9em;
+            color: #558b2f;
+            font-weight: 500;
+        }
+
+        .reports-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .report-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .report-item:hover {
+            border-color: #4caf50;
+            background: #f1f8e9;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .report-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3em;
+            box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
+        }
+
+        .report-info {
+            flex: 1;
+        }
+
+        .report-title {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 6px;
+            color: #1b5e20;
+        }
+
+        .report-location {
+            font-size: 0.95em;
+            color: #558b2f;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .report-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .report-date {
+            font-size: 0.9em;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .report-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 700;
+        }
+
+        .status-cours {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .status-verifie {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        .status-nouveau {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        .contribution-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+        }
+
+        .section-divider {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar {
+                padding: 1rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .navbar {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .map-actions {
+                flex-direction: column;
+            }
+
+            .filter-tabs {
+                grid-template-columns: 1fr;
+            }
+        }
+        a {
+    text-decoration: none;
+    color: inherit;
+}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">
+                <div class="logo-icon">K</div>
+                Kawral AI
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-links">
+                <button class="nav-btn">
+                    <i class="fa-solid fa-house"></i>
+                    <a href="home.html">Accueil</a>
+                </button>
+                <button class="nav-btn">
+                    <i class="fa-solid fa-map"></i>
+                    <a href="carte.html">Carte</a>
+                </button>
+                <button class="nav-btn">
+                    <i class="fa-solid fa-database"></i>
+                    <a href="donnees.html">Données</a>
+                </button>
+                <div class="plus-menu">
+                    <button class="plus-btn" onclick="toggleNavDropdown()">
+                        Plus
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="nav-dropdown" id="navDropdown">
+                        <a href="suivi_citoyen.html" class="active">Suivi citoyen</a>
+                        <a href="recommandation.html">Recommandations</a>
+                        <a href="#">À propos</a>
+                    </div>
+                </div>
+            </div>
+            <button class="connexion-btn">Connexion</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Suivi citoyen</h1>
+            <p>Contribuez à la surveillance environnementale en signalant les problèmes locaux</p>
+        </div>
+
+        <div class="content">
+            <div>
+                <div class="card">
+                    <h2 class="card-title">Carte participative</h2>
+                    
+                    <div class="map-actions">
+                        <button class="btn-primary" onclick="addReport()">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Ajouter un signalement
+                        </button>
+                        <button class="btn-secondary" onclick="uploadPhoto()">
+                            <i class="fa-solid fa-camera"></i>
+                            Ajouter une photo
+                        </button>
+                    </div>
+
+                    <div class="map-container">
+                        <div class="map-marker marker-red" onclick="showMarkerInfo('Érosion critique', 'Saint-Louis')">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="map-marker marker-orange" onclick="showMarkerInfo('Désertification', 'Louga')">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="map-marker marker-green" onclick="showMarkerInfo('Zone surveillée', 'Casamance')">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="map-marker marker-blue" onclick="showMarkerInfo('Pollution eau', 'Fleuve Sénégal')">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div class="map-help-text">
+                            <i class="fas fa-hand-pointer"></i> Cliquez sur les marqueurs pour voir les détails
+                        </div>
+                    </div>
+
+                    <div class="filter-tabs">
+                        <div class="filter-tab" onclick="filterReports('erosion', this)">
+                            <i class="fas fa-water"></i>
+                            Érosion
+                        </div>
+                        <div class="filter-tab" onclick="filterReports('desertification', this)">
+                            <i class="fas fa-mountain"></i>
+                            Désertification
+                        </div>
+                        <div class="filter-tab active" onclick="filterReports('pollution', this)">
+                            <i class="fas fa-industry"></i>
+                            Pollution
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 25px;">
+                    <div class="section-divider">
+                        <h2 class="card-title" style="margin: 0;">Signalements récents</h2>
+                        <button class="btn-secondary" style="padding: 10px 20px;" onclick="viewAllReports()">
+                            <i class="fas fa-th-list"></i>
+                            Voir tout
+                        </button>
+                    </div>
+
+                    <div class="reports-list">
+                        <div class="report-item">
+                            <div class="report-icon"><i class="fas fa-water"></i></div>
+                            <div class="report-info">
+                                <div class="report-title">Érosion côtière</div>
+                                <div class="report-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Saint-Louis
+                                </div>
+                            </div>
+                            <div class="report-meta">
+                                <div class="report-date">
+                                    <i class="far fa-calendar"></i> 15 Nov 2024
+                                </div>
+                                <span class="report-status status-cours">En cours</span>
+                            </div>
+                        </div>
+
+                        <div class="report-item">
+                            <div class="report-icon"><i class="fas fa-mountain"></i></div>
+                            <div class="report-info">
+                                <div class="report-title">Désertification</div>
+                                <div class="report-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Louga
+                                </div>
+                            </div>
+                            <div class="report-meta">
+                                <div class="report-date">
+                                    <i class="far fa-calendar"></i> 12 Nov 2024
+                                </div>
+                                <span class="report-status status-verifie">Vérifié</span>
+                            </div>
+                        </div>
+
+                        <div class="report-item">
+                            <div class="report-icon"><i class="fas fa-industry"></i></div>
+                            <div class="report-info">
+                                <div class="report-title">Pollution industrielle</div>
+                                <div class="report-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Dakar
+                                </div>
+                            </div>
+                            <div class="report-meta">
+                                <div class="report-date">
+                                    <i class="far fa-calendar"></i> 10 Nov 2024
+                                </div>
+                                <span class="report-status status-nouveau">Nouveau</span>
+                            </div>
+                        </div>
+
+                        <div class="report-item">
+                            <div class="report-icon"><i class="fas fa-tree"></i></div>
+                            <div class="report-info">
+                                <div class="report-title">Déforestation</div>
+                                <div class="report-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Casamance
+                                </div>
+                            </div>
+                            <div class="report-meta">
+                                <div class="report-date">
+                                    <i class="far fa-calendar"></i> 8 Nov 2024
+                                </div>
+                                <span class="report-status status-cours">En cours</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <div class="contribution-header">
+                        <div class="badge-icon" style="width: 60px; height: 60px; font-size: 1.5em;">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.3em; font-weight: 700; margin-bottom: 5px; color: #1b5e20;">Mes contributions</h3>
+                            <p style="font-size: 1em; color: #558b2f; font-weight: 600;">
+                                <i class="fas fa-star"></i> Niveau: Observateur actif
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Signalements
+                            </span>
+                            <span class="stat-value">12</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <i class="fas fa-trophy"></i>
+                                Points
+                            </span>
+                            <span class="stat-value">450</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <i class="fas fa-medal"></i>
+                                Badges
+                            </span>
+                            <span class="stat-value">3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 25px;">
+                    <h3 class="card-title">
+                        <i class="fas fa-award"></i>
+                        Badges obtenus
+                    </h3>
+                    <div style="display: grid; gap: 15px;">
+                        <div class="badge-card">
+                            <div class="badge-icon">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <div class="badge-info">
+                                <h3>Observateur</h3>
+                                <p>10+ signalements vérifiés</p>
+                            </div>
+                        </div>
+                        <div class="badge-card" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
+                            <div class="badge-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <div class="badge-info">
+                                <h3>Photographe</h3>
+                                <p>5+ photos partagées</p>
+                            </div>
+                        </div>
+                        <div class="badge-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                            <div class="badge-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="badge-info">
+                                <h3>Pionnier</h3>
+                                <p>Première contribution</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 25px;">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        Progression
+                    </h3>
+                    <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 20px; border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="font-weight: 600; color: #4a5568;">Niveau suivant</span>
+                            <span style="font-weight: 700; color: #1b5e20;">75%</span>
+                        </div>
+                        <div style="background: #e5e7eb; height: 12px; border-radius: 6px; overflow: hidden;">
+                            <div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); height: 100%; width: 75%; border-radius: 6px; transition: width 0.5s ease;"></div>
+                        </div>
+                        <p style="margin-top: 10px; color: #6b7280; font-size: 0.9em;">
+                            <i class="fas fa-info-circle"></i>
+                            Encore 50 points pour devenir <strong>Expert</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleNavDropdown() {
+            const dropdown = document.getElementById('navDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function addReport() {
+            alert('Fonctionnalité d\'ajout de signalement\n\nDans une version complète, ceci ouvrirait un formulaire permettant de:\n• Sélectionner le type de problème\n• Ajouter une description\n• Ajouter des photos\n• Géolocaliser le signalement');
+        }
+
+        function uploadPhoto() {
+            alert('Fonctionnalité d\'ajout de photo\n\nVous pouvez joindre des photos à vos signalements pour mieux documenter les problèmes environnementaux.');
+        }
+
+        function showMarkerInfo(type, location) {
+            alert(`Signalement détecté\n\nType: ${type}\nLocalisation: ${location}\n\nCliquez sur "Ajouter un signalement" pour contribuer.`);
+        }
+
+        function filterReports(type, element) {
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            element.classList.add('active');
+            
+            const typeNames = {
+                'erosion': 'Érosion',
+                'desertification': 'Désertification',
+                'pollution': 'Pollution'
+            };
+            
+            console.log(`Filtrage des signalements: ${typeNames[type]}`);
+        }
+
+        function viewAllReports() {
+            alert('Affichage de tous les signalements\n\nDans une version complète, ceci afficherait une liste complète avec options de tri et de filtrage avancées.');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.plus-menu')) {
+                    const dropdown = document.getElementById('navDropdown');
+                    if (dropdown) {
+                        dropdown.classList.remove('show');
+                    }
+                }
+            });
+
+            const cards = document.querySelectorAll('.card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, index * 100);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease-out';
+                observer.observe(card);
+            });
+
+            const markers = document.querySelectorAll('.map-marker');
+            markers.forEach((marker, index) => {
+                marker.style.animationDelay = `${index * 0.2}s`;
+            });
+
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                } else {
+                    navbar.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                }
+            });
+
+            const reportItems = document.querySelectorAll('.report-item');
+            reportItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const title = this.querySelector('.report-title').textContent;
+                    const location = this.querySelector('.report-location').textContent.trim();
+                    const date = this.querySelector('.report-date').textContent.trim();
+                    const status = this.querySelector('.report-status').textContent;
+                    
+                    alert(`Détails du signalement\n\n${title}\n${location}\n${date}\nStatut: ${status}\n\nDans une version complète, ceci ouvrirait une page de détails avec photos, historique et actions possibles.`);
+                });
+            });
+
+            const statItems = document.querySelectorAll('.stat-item');
+            statItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            const badgeCards = document.querySelectorAll('.badge-card');
+            badgeCards.forEach(badge => {
+                badge.addEventListener('click', function() {
+                    const badgeName = this.querySelector('h3').textContent;
+                    const badgeDesc = this.querySelector('p').textContent;
+                    alert(`Badge: ${badgeName}\n\n${badgeDesc}\n\nContinuez à contribuer pour débloquer plus de badges!`);
+                });
+            });
+
+            setTimeout(() => {
+                const progressBar = document.querySelector('[style*="width: 75%"]');
+                if (progressBar) {
+                    progressBar.style.width = '0%';
+                    setTimeout(() => {
+                        progressBar.style.width = '75%';
+                    }, 100);
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

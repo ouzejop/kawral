@@ -1,0 +1,2627 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawral AI - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1a4d2e 0%, #16a34a 100%);
+            color: white;
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            color: #16a34a;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .logo-text,
+        .sidebar.collapsed .nav-text,
+        .sidebar.collapsed .section-title {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .sidebar-nav {
+            margin-top: 2rem;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            padding: 0 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            margin-bottom: 0.5rem;
+            transition: opacity 0.3s;
+        }
+
+        .nav-item {
+            padding: 0.9rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.15);
+            border-left-color: white;
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            font-size: 0.95rem;
+            transition: opacity 0.3s;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            transition: all 0.3s;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 70px;
+            width: calc(100% - 70px);
+        }
+
+        .top-bar {
+            background: white;
+            padding: 1.2rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #f5f7fa;
+            padding: 0.7rem 1.2rem;
+            border-radius: 10px;
+            width: 400px;
+            gap: 0.8rem;
+        }
+
+        .search-bar i {
+            color: #64748b;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            font-size: 0.95rem;
+            color: #2d3748;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .notification-btn, .user-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #f5f7fa;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .notification-btn:hover, .user-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: #dc2626;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .content-area {
+            padding: 2rem;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.8rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .stat-icon.green {
+            background: #d1fae5;
+            color: #16a34a;
+        }
+
+        .stat-icon.blue {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .stat-icon.yellow {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .stat-icon.red {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change.negative {
+            color: #dc2626;
+        }
+
+        .stat-change.positive {
+            color: #16a34a;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.8rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        /* Map */
+        #map {
+            width: 100%;
+            height: 500px;
+            border-radius: 12px;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.7rem 1.3rem;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .filter-btn:hover {
+            border-color: #16a34a;
+            background: #f0f9f4;
+        }
+
+        .filter-btn.active {
+            background: #16a34a;
+            color: white;
+            border-color: #16a34a;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 0.5rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .dropdown.show .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-item:hover {
+            background: #f0f9f4;
+        }
+
+        .dropdown-item.active {
+            background: #e8f5e9;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Zone Details */
+        .zone-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .zone-card {
+            background: linear-gradient(135deg, #f0f9f4 0%, #d1fae5 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid #16a34a;
+        }
+
+        .zone-card.warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left-color: #f59e0b;
+        }
+
+        .zone-card.danger {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-left-color: #dc2626;
+        }
+
+        .zone-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.8rem;
+        }
+
+        .zone-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .zone-info-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .zone-info-label {
+            font-weight: 500;
+        }
+
+        /* Recommendations */
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .recommendation-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .recommendation-card:hover {
+            border-color: #16a34a;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.1);
+        }
+
+        .recommendation-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-icon {
+            width: 45px;
+            height: 45px;
+            background: #d1fae5;
+            color: #16a34a;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .recommendation-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .recommendation-text {
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab.active {
+            color: #16a34a;
+            border-bottom-color: #16a34a;
+        }
+
+        .tab:hover:not(.active) {
+            color: #4a5568;
+        }
+
+        /* Action Buttons */
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .btn-primary {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #15803d;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #4a5568;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+
+        /* Legend */
+        .legend {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: #1a202c;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 0.6rem 0;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .data-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #1a202c;
+            font-size: 0.9rem;
+        }
+
+        .data-table td {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.good {
+            background: #d1fae5;
+            color: #16a34a;
+        }
+
+        .status-badge.warning {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .status-badge.danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .search-bar {
+                width: 200px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">K</div>
+                    <span class="logo-text">Kawral AI</span>
+                </div>
+                <button class="toggle-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="section-title">Principal</div>
+                    <div class="nav-item active" onclick="showSection('dashboard')">
+                        <i class="fas fa-home"></i>
+                        <span class="nav-text">Tableau de bord</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('carte')">
+                        <i class="fas fa-map"></i>
+                        <span class="nav-text">Carte interactive</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('donnees')">
+                        <i class="fas fa-database"></i>
+                        <span class="nav-text">Données</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="section-title">Analyses</div>
+                    <div class="nav-item" onclick="showSection('erosion')">
+                        <i class="fas fa-water"></i>
+                        <span class="nav-text">Érosion côtière</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('desertification')">
+                        <i class="fas fa-mountain"></i>
+                        <span class="nav-text">Désertification</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('vegetation')">
+                        <i class="fas fa-seedling"></i>
+                        <span class="nav-text">Végétation</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="section-title">Actions</div>
+                    <div class="nav-item" onclick="showSection('recommandations')">
+                        <i class="fas fa-lightbulb"></i>
+                        <span class="nav-text">Recommandations</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('suivi')">
+                        <i class="fas fa-chart-line"></i>
+                        <span class="nav-text">Suivi citoyen</span>
+                    </div>
+                    <div class="nav-item" onclick="showSection('rapports')">
+                        <i class="fas fa-file-alt"></i>
+                        <span class="nav-text">Rapports</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="section-title">Paramètres</div>
+                    <div class="nav-item" onclick="showSection('parametres')">
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-text">Paramètres</span>
+                    </div>
+                    <div class="nav-item">
+                        <i class="fas fa-question-circle"></i>
+                        <span class="nav-text">Aide</span>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Rechercher une zone, une région..." id="searchInput" onkeyup="performSearch()">
+                </div>
+
+                <div class="top-bar-actions">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </button>
+                    <button class="user-btn">
+                        <i class="fas fa-user"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Section -->
+                <section class="page-section active" id="dashboard">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h1 style="font-size: 2.5rem; color: #1b5e20; font-weight: 700; margin-bottom: 0.5rem;">Dashboard Environnemental</h1>
+                            <p style="color: #558b2f; font-size: 1.1rem;">Surveillance de l'érosion côtière et de la désertification au Sénégal</p>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-secondary" onclick="exportData()">
+                                <i class="fas fa-download"></i>
+                                Exporter
+                            </button>
+                            <button class="btn btn-primary" onclick="generateReport()">
+                                <i class="fas fa-file-pdf"></i>
+                                Rapport PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">NDVI Moyen National</div>
+                                    <div class="stat-value">0.45</div>
+                                    <div class="stat-change negative">
+                                        <i class="fas fa-arrow-down"></i> -13% vs 2023
+                                    </div>
+                                </div>
+                                <div class="stat-icon green">
+                                    <i class="fas fa-seedling"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Érosion Côtière</div>
+                                    <div class="stat-value">152 km</div>
+                                    <div class="stat-change negative">
+                                        <i class="fas fa-arrow-up"></i> +20% depuis 2020
+                                    </div>
+                                </div>
+                                <div class="stat-icon red">
+                                    <i class="fas fa-water"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Zones à Risque</div>
+                                    <div class="stat-value">23</div>
+                                    <div class="stat-change negative">
+                                        <i class="fas fa-triangle-exclamation"></i> 8 critiques
+                                    </div>
+                                </div>
+                                <div class="stat-icon yellow">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Surface Désertifiée</div>
+                                    <div class="stat-value">8,450 km²</div>
+                                    <div class="stat-change negative">
+                                        <i class="fas fa-arrow-up"></i> +5% cette année
+                                    </div>
+                                </div>
+                                <div class="stat-icon blue">
+                                    <i class="fas fa-mountain"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Analyse Temporelle</h2>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="dashboardTimeChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Répartition des Risques</h2>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="dashboardRiskChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Zones Critiques</h2>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Région</th>
+                                    <th>Type de Risque</th>
+                                    <th>Niveau</th>
+                                    <th>NDVI</th>
+                                    <th>Évolution</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardCriticalZonesTable">
+                                <tr style="cursor: pointer;" onclick="showZoneDetailsFromDashboard('Saint-Louis')">
+                                    <td><strong>Saint-Louis</strong></td>
+                                    <td>Érosion côtière</td>
+                                    <td><span class="status-badge danger">Élevé</span></td>
+                                    <td>0.42</td>
+                                    <td style="color: #dc2626; font-weight: 600;">-18%</td>
+                                    <td><button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="event.stopPropagation(); showZoneDetailsFromDashboard('Saint-Louis')">Détails</button></td>
+                                </tr>
+                                <tr style="cursor: pointer;" onclick="showZoneDetailsFromDashboard('Louga')">
+                                    <td><strong>Louga</strong></td>
+                                    <td>Désertification</td>
+                                    <td><span class="status-badge danger">Élevé</span></td>
+                                    <td>0.38</td>
+                                    <td style="color: #dc2626; font-weight: 600;">-15%</td>
+                                    <td><button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="event.stopPropagation(); showZoneDetailsFromDashboard('Louga')">Détails</button></td>
+                                </tr>
+                                <tr style="cursor: pointer;" onclick="showZoneDetailsFromDashboard('Matam')">
+                                    <td><strong>Matam</strong></td>
+                                    <td>Désertification</td>
+                                    <td><span class="status-badge danger">Élevé</span></td>
+                                    <td>0.35</td>
+                                    <td style="color: #dc2626; font-weight: 600;">-20%</td>
+                                    <td><button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="event.stopPropagation(); showZoneDetailsFromDashboard('Matam')">Détails</button></td>
+                                </tr>
+                                <tr style="cursor: pointer;" onclick="showZoneDetailsFromDashboard('Langue de Barbarie')">
+                                    <td><strong>Langue de Barbarie</strong></td>
+                                    <td>Érosion côtière</td>
+                                    <td><span class="status-badge danger">Élevé</span></td>
+                                    <td>0.40</td>
+                                    <td style="color: #dc2626; font-weight: 600;">-12%</td>
+                                    <td><button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="event.stopPropagation(); showZoneDetailsFromDashboard('Langue de Barbarie')">Détails</button></td>
+                                </tr>
+                                <tr style="cursor: pointer;" onclick="showZoneDetailsFromDashboard('Dakar')">
+                                    <td><strong>Dakar</strong></td>
+                                    <td>Érosion côtière</td>
+                                    <td><span class="status-badge warning">Moyen</span></td>
+                                    <td>0.48</td>
+                                    <td style="color: #dc2626; font-weight: 600;">-8%</td>
+                                    <td><button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="event.stopPropagation(); showZoneDetailsFromDashboard('Dakar')">Détails</button></td>
+                                </tr>
+                                <tr style="cursor: pointer;" onclick="showZoneDetailsFromDashboard('Delta Saloum')">
+                                    <td><strong>Delta Saloum</strong></td>
+                                    <td>Salinisation</td>
+                                    <td><span class="status-badge warning">Moyen</span></td>
+                                    <td>0.45</td>
+                                    <td style="color: #dc2626; font-weight: 600;">-10%</td>
+                                    <td><button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="event.stopPropagation(); showZoneDetailsFromDashboard('Delta Saloum')">Détails</button></td>
+                                </tr>
+                                <tr style="cursor: pointer;" onclick="showZoneDetailsFromDashboard('Ferlo Nord')">
+                                    <td><strong>Ferlo Nord</strong></td>
+                                    <td>Désertification</td>
+                                    <td><span class="status-badge danger">Élevé</span></td>
+                                    <td>0.36</td>
+                                    <td style="color: #dc2626; font-weight: 600;">-17%</td>
+                                    <td><button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="event.stopPropagation(); showZoneDetailsFromDashboard('Ferlo Nord')">Détails</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card" style="margin-top: 2rem;">
+                        <div class="card-header">
+                            <h2 class="card-title">Recommandations Prioritaires</h2>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                            <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-radius: 12px; padding: 1.5rem;">
+                                <h3 style="color: #1b5e20; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-seedling"></i> Louga - Reboisement Urgent
+                                </h3>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #16a34a; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Planter 50,000 acacias résistants</span>
+                                    </li>
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #16a34a; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Construire 200 demi-lunes</span>
+                                    </li>
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #16a34a; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Former 150 agriculteurs locaux</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div style="background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%); border-radius: 12px; padding: 1.5rem;">
+                                <h3 style="color: #0891b2; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-water"></i> Saint-Louis - Protection Côtière
+                                </h3>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #0891b2; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Installer 3km de digues naturelles</span>
+                                    </li>
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #0891b2; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Planter 10,000 palétuviers</span>
+                                    </li>
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #0891b2; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Renforcer 5km de berges</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-radius: 12px; padding: 1.5rem;">
+                                <h3 style="color: #1b5e20; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-mountain"></i> Matam - Anti-désertification
+                                </h3>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #16a34a; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Créer 100 hectares d'agroforesterie</span>
+                                    </li>
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #16a34a; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Construire cordons pierreux</span>
+                                    </li>
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #16a34a; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Restaurer pâturages dégradés</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 1.5rem;">
+                                <h3 style="color: #f59e0b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-tint"></i> Delta Saloum - Salinisation
+                                </h3>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #f59e0b; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Restaurer mangroves (50 hectares)</span>
+                                    </li>
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #f59e0b; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Créer bassins eau douce</span>
+                                    </li>
+                                    <li style="padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <span style="color: #f59e0b; font-weight: bold; font-size: 1.2rem;">✓</span>
+                                        <span>Adapter cultures au sel</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Carte Section -->
+                <section class="page-section" id="carte">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Carte interactive</h1>
+                    
+                    <div class="card">
+                        <div class="filters">
+                            <div class="dropdown">
+                                <button class="filter-btn" onclick="toggleDropdown('yearDropdown')">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span id="yearText">2024</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="dropdown-content" id="yearDropdown">
+                                    <div class="dropdown-item active" onclick="selectYear(2024)">2024</div>
+                                    <div class="dropdown-item" onclick="selectYear(2023)">2023</div>
+                                    <div class="dropdown-item" onclick="selectYear(2022)">2022</div>
+                                    <div class="dropdown-item" onclick="selectYear(2021)">2021</div>
+                                </div>
+                            </div>
+
+                            <div class="dropdown">
+                                <button class="filter-btn" onclick="toggleDropdown('layerDropdown')">
+                                    <i class="fas fa-seedling" id="layerIcon"></i>
+                                    <span id="layerText">NDVI (Végétation)</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="dropdown-content" id="layerDropdown">
+                                    <div class="dropdown-item active" onclick="selectLayer('ndvi', 'fa-seedling', 'NDVI (Végétation)')">NDVI (Végétation)</div>
+                                    <div class="dropdown-item" onclick="selectLayer('ndwi', 'fa-tint', 'NDWI (Eau)')">NDWI (Eau)</div>
+                                    <div class="dropdown-item" onclick="selectLayer('desert', 'fa-mountain', 'Désertification')">Désertification</div>
+                                    <div class="dropdown-item" onclick="selectLayer('erosion', 'fa-water', 'Érosion côtière')">Érosion côtière</div>
+                                </div>
+                            </div>
+
+                            <button class="filter-btn" onclick="togglePredictions()">
+                                <i class="fas fa-brain"></i>
+                                <span>Prédictions IA</span>
+                            </button>
+
+                            <button class="btn btn-primary" onclick="generateReport()" style="margin-left: auto;">
+                                <i class="fas fa-file-pdf"></i>
+                                Générer rapport
+                            </button>
+                        </div>
+
+                        <div id="map"></div>
+
+                        <div style="margin-top: 1.5rem;">
+                            <div class="legend">
+                                <div class="legend-title">Légende</div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #dc2626;"></div>
+                                    <span>Risque élevé</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #f59e0b;"></div>
+                                    <span>Risque moyen</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #16a34a;"></div>
+                                    <span>Bon état</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="zone-details" id="zoneDetailsContainer">
+                        <!-- Zone cards will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Données Section -->
+                <section class="page-section" id="donnees">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Données & Sources</h1>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Évolution NDVI</h2>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="ndviChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Érosion côtière (km)</h2>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="erosionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Sources de données</h2>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-download"></i>
+                                Télécharger tout
+                            </button>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                        <i class="fas fa-satellite"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">NASA MODIS</div>
+                                        <div style="font-size: 0.9rem; color: #64748b;">Images satellite NDVI</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <span style="font-size: 0.9rem; color: #64748b;">MAJ: Quotidien</span>
+                                    <button class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                        <i class="fas fa-satellite"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">ESA Sentinel-2</div>
+                                        <div style="font-size: 0.9rem; color: #64748b;">Images haute résolution</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <span style="font-size: 0.9rem; color: #64748b;">MAJ: 5 jours</span>
+                                    <button class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                        <i class="fas fa-cloud-sun"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">ANACIM</div>
+                                        <div style="font-size: 0.9rem; color: #64748b;">Données climatiques</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <span style="font-size: 0.9rem; color: #64748b;">MAJ: Horaire</span>
+                                    <button class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 50px; height: 50px; background: #16a34a; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                        <i class="fas fa-water"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">NOAA</div>
+                                        <div style="font-size: 0.9rem; color: #64748b;">Données océaniques</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <span style="font-size: 0.9rem; color: #64748b;">MAJ: Quotidien</span>
+                                    <button class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Érosion Section -->
+                <section class="page-section" id="erosion">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Érosion côtière</h1>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Littoral total</div>
+                                    <div class="stat-value">718 km</div>
+                                </div>
+                                <div class="stat-icon blue">
+                                    <i class="fas fa-ruler"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Zone érodée</div>
+                                    <div class="stat-value">152 km</div>
+                                    <div class="stat-change negative">21% du littoral</div>
+                                </div>
+                                <div class="stat-icon red">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Vitesse moyenne</div>
+                                    <div class="stat-value">2.8 m/an</div>
+                                    <div class="stat-change negative">+0.3m vs 2020</div>
+                                </div>
+                                <div class="stat-icon yellow">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Zones critiques d'érosion</h2>
+                        </div>
+                        
+                        <div class="zone-details">
+                            <div class="zone-card danger">
+                                <div class="zone-name">Saint-Louis</div>
+                                <div class="zone-info">
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Vitesse d'érosion:</span>
+                                        <span>5 m/an</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Surface perdue:</span>
+                                        <span>15 ha (2020-2024)</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Statut:</span>
+                                        <span style="color: #dc2626; font-weight: 600;">Critique</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="zone-card danger">
+                                <div class="zone-name">Langue de Barbarie</div>
+                                <div class="zone-info">
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Vitesse d'érosion:</span>
+                                        <span>4.5 m/an</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Surface perdue:</span>
+                                        <span>12 ha (2020-2024)</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Statut:</span>
+                                        <span style="color: #dc2626; font-weight: 600;">Critique</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="zone-card warning">
+                                <div class="zone-name">Dakar</div>
+                                <div class="zone-info">
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Vitesse d'érosion:</span>
+                                        <span>2 m/an</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Surface perdue:</span>
+                                        <span>8 ha (2020-2024)</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Statut:</span>
+                                        <span style="color: #f59e0b; font-weight: 600;">Surveillance</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="zone-card warning">
+                                <div class="zone-name">Cap Skirring</div>
+                                <div class="zone-info">
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Vitesse d'érosion:</span>
+                                        <span>1.5 m/an</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Surface perdue:</span>
+                                        <span>6 ha (2020-2024)</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Statut:</span>
+                                        <span style="color: #f59e0b; font-weight: 600;">Modéré</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Évolution de l'érosion (2020-2024)</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="erosionEvolutionChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Désertification Section -->
+                <section class="page-section" id="desertification">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Désertification</h1>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Superficie affectée</div>
+                                    <div class="stat-value">12,450 km²</div>
+                                    <div class="stat-change negative">+8% depuis 2020</div>
+                                </div>
+                                <div class="stat-icon yellow">
+                                    <i class="fas fa-mountain"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Avancée du désert</div>
+                                    <div class="stat-value">2 km/an</div>
+                                    <div class="stat-change negative">Matam</div>
+                                </div>
+                                <div class="stat-icon red">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Régions critiques</div>
+                                    <div class="stat-value">5</div>
+                                    <div class="stat-change negative">Action urgente</div>
+                                </div>
+                                <div class="stat-icon red">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Zones de désertification</h2>
+                        </div>
+                        
+                        <div class="zone-details">
+                            <div class="zone-card danger">
+                                <div class="zone-name">Matam</div>
+                                <div class="zone-info">
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Avancée:</span>
+                                        <span>2 km/an</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Dégradation:</span>
+                                        <span>Sévère</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">NDVI:</span>
+                                        <span>0.35</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="zone-card danger">
+                                <div class="zone-name">Ferlo Nord</div>
+                                <div class="zone-info">
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Avancée:</span>
+                                        <span>1.8 km/an</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Dégradation:</span>
+                                        <span>Sévère</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">NDVI:</span>
+                                        <span>0.33</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="zone-card warning">
+                                <div class="zone-name">Louga</div>
+                                <div class="zone-info">
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Avancée:</span>
+                                        <span>1.2 km/an</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Dégradation:</span>
+                                        <span>Modérée</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">NDVI:</span>
+                                        <span>0.38</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="zone-card">
+                                <div class="zone-name">Casamance</div>
+                                <div class="zone-info">
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Avancée:</span>
+                                        <span>0.2 km/an</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">Dégradation:</span>
+                                        <span>Stable</span>
+                                    </div>
+                                    <div class="zone-info-item">
+                                        <span class="zone-info-label">NDVI:</span>
+                                        <span>0.62</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Végétation Section -->
+                <section class="page-section" id="vegetation">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Couverture végétale</h1>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">NDVI National</div>
+                                    <div class="stat-value">0.45</div>
+                                    <div class="stat-change negative">-13% vs 2023</div>
+                                </div>
+                                <div class="stat-icon green">
+                                    <i class="fas fa-seedling"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Couverture forestière</div>
+                                    <div class="stat-value">43.8%</div>
+                                    <div class="stat-change negative">-2.1% depuis 2020</div>
+                                </div>
+                                <div class="stat-icon green">
+                                    <i class="fas fa-tree"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">Zones en déclin</div>
+                                    <div class="stat-value">8</div>
+                                    <div class="stat-change negative">Surveillance active</div>
+                                </div>
+                                <div class="stat-icon yellow">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">État de la végétation par région</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="vegetationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Analyse NDVI détaillée</h2>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Région</th>
+                                    <th>NDVI 2024</th>
+                                    <th>NDVI 2023</th>
+                                    <th>Évolution</th>
+                                    <th>Tendance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Casamance</td>
+                                    <td>0.62</td>
+                                    <td>0.64</td>
+                                    <td>-3%</td>
+                                    <td><span class="status-badge good">Stable</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Tambacounda</td>
+                                    <td>0.58</td>
+                                    <td>0.60</td>
+                                    <td>-3%</td>
+                                    <td><span class="status-badge good">Stable</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Thiès</td>
+                                    <td>0.45</td>
+                                    <td>0.48</td>
+                                    <td>-6%</td>
+                                    <td><span class="status-badge warning">En baisse</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Louga</td>
+                                    <td>0.38</td>
+                                    <td>0.45</td>
+                                    <td>-15%</td>
+                                    <td><span class="status-badge danger">Critique</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Matam</td>
+                                    <td>0.35</td>
+                                    <td>0.42</td>
+                                    <td>-17%</td>
+                                    <td><span class="status-badge danger">Critique</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Recommandations Section -->
+                <section class="page-section" id="recommandations">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Recommandations IA</h1>
+                    
+                    <div class="card" style="background: linear-gradient(135deg, #f0f9f4 0%, #d1fae5 100%); border: none;">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="width: 60px; height: 60px; background: #16a34a; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div>
+                                <h2 style="font-size: 1.5rem; font-weight: 600; color: #1a202c; margin-bottom: 0.3rem;">Intelligence artificielle</h2>
+                                <p style="color: #16a34a; font-size: 0.95rem;">Recommandations personnalisées basées sur l'analyse des données satellitaires</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchRecoTab(0)">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Par région
+                        </button>
+                        <button class="tab" onclick="switchRecoTab(1)">
+                            <i class="fas fa-seedling"></i>
+                            Reboisement
+                        </button>
+                        <button class="tab" onclick="switchRecoTab(2)">
+                            <i class="fas fa-water"></i>
+                            Protection côtière
+                        </button>
+                    </div>
+
+                    <div class="tab-content active" id="recoTab0">
+                        <div class="recommendations-grid">
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-seedling"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Région de Louga</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Priorité: Élevée</div>
+                                    </div>
+                                </div>
+                                <ul class="recommendation-text" style="list-style: none; padding: 0;">
+                                    <li style="padding: 0.4rem 0;">• Planter des acacias résistants à la sécheresse</li>
+                                    <li style="padding: 0.4rem 0;">• Construire des demi-lunes pour récupération d'eau</li>
+                                    <li style="padding: 0.4rem 0;">• Améliorer les pratiques d'élevage</li>
+                                </ul>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon" style="background: #dbeafe; color: #2563eb;">
+                                        <i class="fas fa-water"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Saint-Louis</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Priorité: Urgente</div>
+                                    </div>
+                                </div>
+                                <ul class="recommendation-text" style="list-style: none; padding: 0;">
+                                    <li style="padding: 0.4rem 0;">• Planter des mangroves pour stabiliser les berges</li>
+                                    <li style="padding: 0.4rem 0;">• Installer des digues naturelles en pierre</li>
+                                    <li style="padding: 0.4rem 0;">• Créer des dunes artificielles</li>
+                                </ul>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-mountain"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Matam</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Priorité: Élevée</div>
+                                    </div>
+                                </div>
+                                <ul class="recommendation-text" style="list-style: none; padding: 0;">
+                                    <li style="padding: 0.4rem 0;">• Développer l'agroforesterie</li>
+                                    <li style="padding: 0.4rem 0;">• Construire des cordons pierreux anti-érosion</li>
+                                    <li style="padding: 0.4rem 0;">• Promouvoir la culture de jatropha</li>
+                                </ul>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon" style="background: #dbeafe; color: #2563eb;">
+                                        <i class="fas fa-water"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Delta du Saloum</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Priorité: Moyenne</div>
+                                    </div>
+                                </div>
+                                <ul class="recommendation-text" style="list-style: none; padding: 0;">
+                                    <li style="padding: 0.4rem 0;">• Restaurer les forêts de mangroves</li>
+                                    <li style="padding: 0.4rem 0;">• Créer des bassins de rétention d'eau douce</li>
+                                    <li style="padding: 0.4rem 0;">• Encourager la riziculture adaptée au sel</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="recoTab1" style="display: none;">
+                        <div class="recommendations-grid">
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Acacia Sénégal</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Zone: Sahel</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Excellent pour la fixation d'azote et très résistant à la sécheresse. Idéal pour Louga et Matam.</p>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Neem</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Zone: Sahel</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Fertilisant naturel, fournit de l'ombre et résiste bien aux conditions arides.</p>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Palétuviers</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Zone: Côtier</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Protection côtière exceptionnelle et favorise la biodiversité marine.</p>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Baobab</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Zone: Sahel</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Excellent stockage d'eau, fournit nutrition et revenus aux communautés.</p>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Jatropha</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Zone: Sahel</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Production de biocarburant et création de haies vives anti-érosion.</p>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon">
+                                        <i class="fas fa-tree"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Eucalyptus</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Zone: Côtier</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Croissance rapide, excellent pour le bois de chauffage et la construction.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="recoTab2" style="display: none;">
+                        <div class="recommendations-grid">
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon" style="background: #dbeafe; color: #2563eb;">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Digues naturelles</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Urgence: Élevée</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Construction avec matériaux locaux (pierres, sable) pour freiner l'érosion côtière.</p>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon" style="background: #dbeafe; color: #2563eb;">
+                                        <i class="fas fa-water"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Rechargement des plages</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Coût: Modéré</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Apport de sable pour reconstituer les plages érodées et protéger le littoral.</p>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon" style="background: #dbeafe; color: #2563eb;">
+                                        <i class="fas fa-anchor"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Brise-lames submersibles</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Durabilité: Excellente</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Structures sous-marines pour dissiper l'énergie des vagues avant qu'elles n'atteignent la côte.</p>
+                            </div>
+
+                            <div class="recommendation-card">
+                                <div class="recommendation-header">
+                                    <div class="recommendation-icon" style="background: #dbeafe; color: #2563eb;">
+                                        <i class="fas fa-leaf"></i>
+                                    </div>
+                                    <div>
+                                        <div class="recommendation-title">Végétalisation dunaire</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Impact: Fort</div>
+                                    </div>
+                                </div>
+                                <p class="recommendation-text">Plantation d'espèces fixatrices pour stabiliser les dunes et protéger naturellement.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Suivi citoyen Section -->
+                <section class="page-section" id="suivi">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Suivi citoyen</h1>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Signaler un problème environnemental</h2>
+                        </div>
+                        <form onsubmit="submitReport(event)" style="display: grid; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Type de problème</label>
+                                <select style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                                    <option>Érosion côtière</option>
+                                    <option>Désertification</option>
+                                    <option>Déforestation</option>
+                                    <option>Pollution</option>
+                                    <option>Autre</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Localisation</label>
+                                <input type="text" placeholder="Ex: Saint-Louis, Langue de Barbarie" style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Description</label>
+                                <textarea rows="4" placeholder="Décrivez le problème observé..." style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; resize: vertical;"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: fit-content;">
+                                <i class="fas fa-paper-plane"></i>
+                                Envoyer le signalement
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Signalements récents</h2>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">Érosion importante observée</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Saint-Louis, Langue de Barbarie</div>
+                                    </div>
+                                    <span class="status-badge danger">Urgent</span>
+                                </div>
+                                <p style="color: #4a5568; font-size: 0.9rem; margin-bottom: 0.5rem;">La plage a reculé de plusieurs mètres en une semaine. Situation critique.</p>
+                                <div style="font-size: 0.85rem; color: #64748b;">Il y a 2 heures • Par M. Diallo</div>
+                            </div>
+
+                            <div style="padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">Dégradation de la végétation</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Louga</div>
+                                    </div>
+                                    <span class="status-badge warning">Moyen</span>
+                                </div>
+                                <p style="color: #4a5568; font-size: 0.9rem; margin-bottom: 0.5rem;">Nombreux arbres morts dans la zone. Besoin d'intervention.</p>
+                                <div style="font-size: 0.85rem; color: #64748b;">Il y a 5 heures • Par Mme Fall</div>
+                            </div>
+
+                            <div style="padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">Avancée du sable</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Matam</div>
+                                    </div>
+                                    <span class="status-badge warning">Moyen</span>
+                                </div>
+                                <p style="color: #4a5568; font-size: 0.9rem; margin-bottom: 0.5rem;">Le désert avance vers les zones cultivées.</p>
+                                <div style="font-size: 0.85rem; color: #64748b;">Il y a 1 jour • Par M. Ndiaye</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Rapports Section -->
+                <section class="page-section" id="rapports">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Rapports</h1>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Générer un rapport personnalisé</h2>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Type d'analyse</label>
+                                <select id="reportType" style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                                    <option>Érosion côtière</option>
+                                    <option>Désertification</option>
+                                    <option>Végétation (NDVI)</option>
+                                    <option>Ressources en eau (NDWI)</option>
+                                    <option>Rapport complet</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Région</label>
+                                <select id="reportRegion" style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                                    <option>Toutes les régions</option>
+                                    <option>Saint-Louis</option>
+                                    <option>Louga</option>
+                                    <option>Matam</option>
+                                    <option>Dakar</option>
+                                    <option>Thiès</option>
+                                    <option>Casamance</option>
+                                    <option>Tambacounda</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Période de début</label>
+                                <input type="date" id="reportStartDate" value="2024-01-01" style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Période de fin</label>
+                                <input type="date" id="reportEndDate" value="2024-11-13" style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="generateCustomReport()">
+                            <i class="fas fa-file-pdf"></i>
+                            Générer le rapport PDF
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Rapports disponibles</h2>
+                        </div>
+                        <div style="display: grid; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 50px; height: 50px; background: #fee2e2; color: #dc2626; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">Rapport Érosion Côtière 2024</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Généré le 10 Nov 2024 • 2.4 MB</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    Télécharger
+                                </button>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 50px; height: 50px; background: #fee2e2; color: #dc2626; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">Analyse NDVI Annuelle 2024</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Généré le 5 Nov 2024 • 3.1 MB</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    Télécharger
+                                </button>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 50px; height: 50px; background: #fee2e2; color: #dc2626; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #1a202c;">État de la Désertification - Q3 2024</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">Généré le 1 Oct 2024 • 1.8 MB</div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    Télécharger
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Paramètres Section -->
+                <section class="page-section" id="parametres">
+                    <h1 style="font-size: 2rem; margin-bottom: 1.5rem; color: #1a202c;">Paramètres</h1>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Préférences d'affichage</h2>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; color: #1a202c;">Notifications</div>
+                                    <div style="font-size: 0.85rem; color: #64748b;">Recevoir des alertes pour les zones critiques</div>
+                                </div>
+                                <label style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #16a34a; transition: .4s; border-radius: 24px;"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; color: #1a202c;">Mode sombre</div>
+                                    <div style="font-size: 0.85rem; color: #64748b;">Activer le thème sombre</div>
+                                </div>
+                                <label style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px;"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Préférences de données</h2>
+                        </div>
+                        <div style="display: grid; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Fréquence de mise à jour</label>
+                                <select style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                                    <option>Temps réel</option>
+                                    <option>Quotidien</option>
+                                    <option>Hebdomadaire</option>
+                                    <option>Mensuel</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Unités de mesure</label>
+                                <select style="width: 100%; padding: 0.7rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem;">
+                                    <option>Métrique (km, m)</option>
+                                    <option>Impérial (mi, ft)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Variables globales
+        let map;
+        let currentYear = 2024;
+        let currentLayer = 'ndvi';
+        let markers = [];
+        let circles = [];
+
+        // Données des zones
+        const zonesData = {
+            ndvi: [
+                {name: "Région de Louga", coords: [15.6167, -16.2333], risk: "high", info: "Diminution NDVI de 15% sur 6 mois", color: "#dc2626", value: "0.38"},
+                {name: "Région de Thiès", coords: [14.8000, -16.9333], risk: "medium", info: "NDVI stable à 0.45", color: "#f59e0b", value: "0.45"},
+                {name: "Région de Casamance", coords: [12.5500, -16.2630], risk: "good", info: "Bon état - NDVI 0.62", color: "#16a34a", value: "0.62"},
+                {name: "Région de Tambacounda", coords: [13.7667, -13.6667], risk: "good", info: "Végétation dense - NDVI 0.58", color: "#16a34a", value: "0.58"}
+            ],
+            ndwi: [
+                {name: "Fleuve Sénégal", coords: [16.0179, -16.4897], risk: "good", info: "Niveau d'eau optimal - NDWI 0.65", color: "#16a34a", value: "0.65"},
+                {name: "Lac de Guiers", coords: [15.8000, -15.8000], risk: "medium", info: "Baisse du niveau d'eau - NDWI 0.42", color: "#f59e0b", value: "0.42"},
+                {name: "Delta du Saloum", coords: [13.8000, -16.5000], risk: "high", info: "Assèchement critique - NDWI 0.28", color: "#dc2626", value: "0.28"}
+            ],
+            desert: [
+                {name: "Région de Matam", coords: [15.6556, -13.2556], risk: "high", info: "Avancée du désert de 2km/an", color: "#dc2626", value: "Critique"},
+                {name: "Ferlo Nord", coords: [15.5000, -14.5000], risk: "high", info: "Dégradation sévère des sols", color: "#dc2626", value: "Sévère"},
+                {name: "Région de Louga", coords: [15.6167, -16.2333], risk: "medium", info: "Risque de désertification modéré", color: "#f59e0b", value: "Modéré"}
+            ],
+            erosion: [
+                {name: "Saint-Louis", coords: [16.0179, -16.4897], risk: "high", info: "Érosion côtière critique - 5m/an", color: "#dc2626", value: "5m/an"},
+                {name: "Langue de Barbarie", coords: [16.0500, -16.5100], risk: "high", info: "Risque d'inondation élevé", color: "#dc2626", value: "Critique"},
+                {name: "Région de Dakar", coords: [14.7167, -17.4677], risk: "medium", info: "Surveillance côtière nécessaire", color: "#f59e0b", value: "2m/an"}
+            ]
+        };
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+
+            if (sectionId === 'carte' && !map) {
+                setTimeout(initMap, 100);
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        // Carte
+        function initMap() {
+            if (map) return;
+            
+            map = L.map('map').setView([14.4974, -14.4524], 7);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            updateMapMarkers();
+        }
+
+        function updateMapMarkers() {
+            if (!map) return;
+
+            markers.forEach(marker => map.removeLayer(marker));
+            circles.forEach(circle => map.removeLayer(circle));
+            markers = [];
+            circles = [];
+
+            const zones = zonesData[currentLayer];
+            if (!zones) return;
+
+            zones.forEach(zone => {
+                const circle = L.circle(zone.coords, {
+                    color: zone.color,
+                    fillColor: zone.color,
+                    fillOpacity: 0.25,
+                    radius: 35000,
+                    weight: 2
+                }).addTo(map);
+                circles.push(circle);
+
+                let iconHtml = '';
+                if (zone.risk === 'high') {
+                    iconHtml = '<div style="background: #dc2626; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"><i class="fas fa-exclamation-triangle" style="font-size: 15px;"></i></div>';
+                } else if (zone.risk === 'medium') {
+                    iconHtml = '<div style="background: #f59e0b; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"><i class="fas fa-exclamation" style="font-size: 15px;"></i></div>';
+                } else {
+                    iconHtml = '<div style="background: #16a34a; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"><i class="fas fa-check" style="font-size: 15px;"></i></div>';
+                }
+
+                const customIcon = L.divIcon({
+                    html: iconHtml,
+                    className: 'custom-marker',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+
+                const marker = L.marker(zone.coords, { icon: customIcon }).addTo(map);
+                marker.bindPopup(`
+                    <div style="font-family: 'Segoe UI', sans-serif; min-width: 200px;">
+                        <h3 style="margin: 0 0 12px 0; color: #1a202c; font-size: 1.2em; font-weight: 700;">${zone.name}</h3>
+                        <p style="margin: 8px 0; color: #555; font-size: 0.95em;"><strong>Statut:</strong> ${zone.info}</p>
+                        <p style="margin: 8px 0; color: #555; font-size: 0.95em;"><strong>Valeur:</strong> ${zone.value}</p>
+                        <p style="margin: 8px 0 0 0; color: #888; font-size: 0.85em;">Année: ${currentYear}</p>
+                    </div>
+                `);
+                markers.push(marker);
+            });
+
+            updateZoneDetails();
+        }
+
+        function updateZoneDetails() {
+            const container = document.getElementById('zoneDetailsContainer');
+            if (!container) return;
+
+            const zones = zonesData[currentLayer];
+            if (!zones) return;
+
+            container.innerHTML = zones.map(zone => `
+                <div class="zone-card ${zone.risk === 'high' ? 'danger' : zone.risk === 'medium' ? 'warning' : ''}">
+                    <div class="zone-name">${zone.name}</div>
+                    <div class="zone-info">
+                        <div class="zone-info-item">
+                            <span class="zone-info-label">Statut:</span>
+                            <span>${zone.info}</span>
+                        </div>
+                        <div class="zone-info-item">
+                            <span class="zone-info-label">Valeur:</span>
+                            <span>${zone.value}</span>
+                        </div>
+                        <div class="zone-info-item">
+                            <span class="zone-info-label">Risque:</span>
+                            <span style="color: ${zone.color}; font-weight: 600;">
+                                ${zone.risk === 'high' ? 'Élevé' : zone.risk === 'medium' ? 'Moyen' : 'Bon état'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filtres
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id).parentElement;
+            const allDropdowns = document.querySelectorAll('.dropdown');
+            
+            allDropdowns.forEach(d => {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+            
+            dropdown.classList.toggle('show');
+        }
+
+        function selectYear(year) {
+            currentYear = year;
+            document.getElementById('yearText').textContent = year;
+            
+            document.querySelectorAll('#yearDropdown .dropdown-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.getElementById('yearDropdown').parentElement.classList.remove('show');
+            updateMapMarkers();
+        }
+
+        function selectLayer(layer, icon, text) {
+            currentLayer = layer;
+            document.getElementById('layerText').textContent = text;
+            document.getElementById('layerIcon').className = 'fas ' + icon;
+            
+            document.querySelectorAll('#layerDropdown .dropdown-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.getElementById('layerDropdown').parentElement.classList.remove('show');
+            updateMapMarkers();
+        }
+
+        function togglePredictions() {
+            alert('Prédictions IA activées: Affichage des zones à risque futur basé sur les tendances actuelles');
+        }
+
+        // Recherche
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (query.length < 2) return;
+
+            const allZones = [...zonesData.ndvi, ...zonesData.ndwi, ...zonesData.desert, ...zonesData.erosion];
+            const results = allZones.filter(zone => 
+                zone.name.toLowerCase().includes(query)
+            );
+
+            if (results.length > 0 && map) {
+                const firstResult = results[0];
+                map.setView(firstResult.coords, 10);
+                
+                markers.forEach(marker => {
+                    const pos = marker.getLatLng();
+                    if (pos.lat === firstResult.coords[0] && pos.lng === firstResult.coords[1]) {
+                        marker.openPopup();
+                    }
+                });
+            }
+        }
+
+        // Rapports
+        function generateReport() {
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<div class="loading"></div> Génération...';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                alert('Rapport généré avec succès!\n\nContenu:\n- Analyse des zones à risque\n- Évolution temporelle\n- Recommandations\n\n(Le téléchargement PDF démarrerait ici)');
+            }, 2000);
+        }
+
+        function generateCustomReport() {
+            const type = document.getElementById('reportType').value;
+            const region = document.getElementById('reportRegion').value;
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            
+            alert(`Génération du rapport:\n\nType: ${type}\nRégion: ${region}\nPériode: ${startDate} à ${endDate}\n\n✓ Rapport généré avec succès!`);
+        }
+
+        // Suivi citoyen
+        function submitReport(e) {
+            e.preventDefault();
+            alert('Signalement envoyé avec succès!\n\nVotre contribution aide à améliorer notre surveillance environnementale.\n\nMerci!');
+            e.target.reset();
+        }
+
+        // Onglets recommandations
+        function switchRecoTab(index) {
+            document.querySelectorAll('.tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            
+            document.querySelectorAll('[id^="recoTab"]').forEach((content, i) => {
+                content.style.display = i === index ? 'block' : 'none';
+            });
+        }
+
+        // Charts
+        function initCharts() {
+            // Dashboard Time Chart
+            const dashboardTimeCtx = document.getElementById('dashboardTimeChart');
+            if (dashboardTimeCtx) {
+                new Chart(dashboardTimeCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                        datasets: [{
+                            label: 'NDVI Moyen',
+                            data: [0.52, 0.50, 0.48, 0.47, 0.46, 0.45],
+                            borderColor: '#16a34a',
+                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Érosion (km)',
+                            data: [145, 147, 148, 149, 151, 152],
+                            borderColor: '#dc2626',
+                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'NDVI'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Érosion (km)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Dashboard Risk Chart
+            const dashboardRiskCtx = document.getElementById('dashboardRiskChart');
+            if (dashboardRiskCtx) {
+                new Chart(dashboardRiskCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Risque Élevé', 'Risque Moyen', 'Risque Faible'],
+                        datasets: [{
+                            data: [8, 9, 6],
+                            backgroundColor: ['#dc2626', '#f59e0b', '#16a34a'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Dashboard Line Chart (original)
+            const dashboardLineCtx = document.getElementById('dashboardLineChart');
+            if (dashboardLineCtx) {
+                new Chart(dashboardLineCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                        datasets: [{
+                            label: 'NDVI',
+                            data: [0.42, 0.38, 0.45, 0.52, 0.48, 0.45],
+                            borderColor: '#16a34a',
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            pointRadius: 4
+                        }, {
+                            label: 'NDWI',
+                            data: [0.35, 0.32, 0.38, 0.42, 0.39, 0.37],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'transparent',
+                            tension: 0.4,
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // NDVI Chart
+            const ndviCtx = document.getElementById('ndviChart');
+            if (ndviCtx) {
+                new Chart(ndviCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                        datasets: [{
+                            label: 'NDVI',
+                            data: [0.42, 0.38, 0.45, 0.52, 0.48, 0.45],
+                            borderColor: '#16a34a',
+                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Erosion Chart
+            const erosionCtx = document.getElementById('erosionChart');
+            if (erosionCtx) {
+                new Chart(erosionCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['2020', '2021', '2022', '2023', '2024'],
+                        datasets: [{
+                            label: 'Érosion (km)',
+                            data: [127, 135, 142, 148, 152],
+                            backgroundColor: '#dc2626'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Erosion Evolution Chart
+            const erosionEvolutionCtx = document.getElementById('erosionEvolutionChart');
+            if (erosionEvolutionCtx) {
+                new Chart(erosionEvolutionCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['2020', '2021', '2022', '2023', '2024'],
+                        datasets: [{
+                            label: 'Saint-Louis',
+                            data: [4.2, 4.5, 4.7, 4.9, 5.0],
+                            borderColor: '#dc2626',
+                            tension: 0.4
+                        }, {
+                            label: 'Dakar',
+                            data: [1.5, 1.6, 1.8, 1.9, 2.0],
+                            borderColor: '#f59e0b',
+                            tension: 0.4
+                        }, {
+                            label: 'Cap Skirring',
+                            data: [1.2, 1.3, 1.4, 1.4, 1.5],
+                            borderColor: '#16a34a',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Vegetation Chart
+            const vegetationCtx = document.getElementById('vegetationChart');
+            if (vegetationCtx) {
+                new Chart(vegetationCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Casamance', 'Tambacounda', 'Thiès', 'Louga', 'Matam'],
+                        datasets: [{
+                            label: 'NDVI 2024',
+                            data: [0.62, 0.58, 0.45, 0.38, 0.35],
+                            backgroundColor: ['#16a34a', '#16a34a', '#f59e0b', '#dc2626', '#dc2626']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y'
+                    }
+                });
+            }
+        }
+
+        // Fermer dropdowns en cliquant ailleurs
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            
+            // Observer pour charger la carte quand la section devient visible
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.target.id === 'carte') {
+                        initMap();
+                    }
+                });
+            });
+            
+            const carteSection = document.getElementById('carte');
+            if (carteSection) {
+                observer.observe(carteSection);
+            }
+        });
+    </script>
+</body>
+</html>
